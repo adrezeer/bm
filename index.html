@@ -5,416 +5,1006 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>تطبيق تسميع الأسئلة والإجابات</title>
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;--soft:#111827;--success:#10b981;--danger:#ef4444}
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans Arabic',sans-serif;background:linear-gradient(180deg,#021226 0%,#041226 100%);color:#e6eef6}
-    .container{max-width:980px;margin:28px auto;padding:20px}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
-    h1{margin:0;font-size:22px;font-weight:700}
-    p.lead{margin:0;color:var(--muted);font-size:14px}
-
-    .card{background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;margin-top:18px;box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.02)}
-    .form-row{display:flex;gap:8px;align-items:center}
-    input,textarea,button,select{font-size:15px}
-    input[type="text"],input[type="number"],textarea,select{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:inherit;transition:all 0.2s}
-    input[type="text"]:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);background:rgba(255,255,255,0.04)}
-    textarea{min-height:62px;resize:vertical}
-    .btn{background:var(--accent);border:none;color:#000;padding:10px 16px;border-radius:10px;cursor:pointer;transition:all 0.2s;font-weight:600}
-    .btn:hover:not(:disabled){opacity:0.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(6,182,212,0.3)}
-    .btn:active:not(:disabled){transform:translateY(0)}
+    :root{
+      --bg:#0a0e1a;--card:#0f1420;--accent:#06b6d4;--accent-hover:#0891b2;
+      --muted:#94a3b8;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;
+      --purple:#a855f7;--pink:#ec4899;--indigo:#6366f1;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif,-apple-system,'Noto Sans Arabic',sans-serif;
+      background:linear-gradient(135deg,#0a0e1a 0%,#1a1f35 50%,#0a0e1a 100%);color:#e6eef6;overflow-x:hidden}
+    
+    .container{max-width:1200px;margin:0 auto;padding:20px}
+    
+    /* Header */
+    header{
+      background:linear-gradient(135deg,rgba(6,182,212,0.1) 0%,rgba(168,85,247,0.1) 100%);
+      border-radius:20px;padding:30px;margin-bottom:30px;
+      border:1px solid rgba(255,255,255,0.1);
+      box-shadow:0 20px 60px rgba(0,0,0,0.5);
+      position:relative;overflow:hidden
+    }
+    header::before{
+      content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;
+      background:radial-gradient(circle,rgba(6,182,212,0.1) 0%,transparent 70%);
+      animation:rotate 20s linear infinite
+    }
+    @keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    h1{margin:0;font-size:32px;font-weight:800;background:linear-gradient(135deg,#06b6d4,#a855f7);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;position:relative;z-index:1}
+    p.lead{margin:8px 0 0;color:var(--muted);font-size:15px;position:relative;z-index:1}
+    
+    /* Cards */
+    .card{
+      background:rgba(15,20,32,0.6);backdrop-filter:blur(10px);border-radius:16px;
+      padding:24px;margin-bottom:24px;border:1px solid rgba(255,255,255,0.08);
+      box-shadow:0 8px 32px rgba(0,0,0,0.4);transition:all 0.3s
+    }
+    .card:hover{border-color:rgba(6,182,212,0.3);transform:translateY(-2px)}
+    
+    .card-title{
+      font-size:18px;font-weight:700;margin:0 0 16px;
+      display:flex;align-items:center;gap:10px;color:#fff
+    }
+    
+    /* Form Elements */
+    input[type="text"],input[type="number"],textarea,select{
+      width:100%;padding:12px 16px;border-radius:10px;
+      border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.03);color:#fff;
+      font-size:15px;transition:all 0.3s;font-family:inherit
+    }
+    input:focus,textarea:focus,select:focus{
+      outline:none;border-color:var(--accent);
+      background:rgba(255,255,255,0.06);
+      box-shadow:0 0 0 3px rgba(6,182,212,0.1)
+    }
+    
+    .form-row{display:flex;gap:12px;margin-bottom:12px}
+    
+    /* Buttons */
+    .btn{
+      padding:12px 20px;border-radius:10px;border:none;
+      font-size:14px;font-weight:600;cursor:pointer;
+      transition:all 0.3s;display:inline-flex;align-items:center;gap:8px;
+      font-family:inherit
+    }
     .btn:disabled{opacity:0.4;cursor:not-allowed}
-    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--muted)}
-    .btn.secondary:hover:not(:disabled){background:rgba(255,255,255,0.05);color:#fff}
-    .btn.success{background:var(--success);color:#000}
-    .btn.danger{background:var(--danger);color:#fff}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
-    ul.list{list-style:none;padding:0;margin:10px 0 0}
-    li.item{padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;transition:all 0.2s}
-    li.item:hover{background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.1)}
-    .meta{color:var(--muted);font-size:13px;margin-top:4px}
-    .small{font-size:13px;color:var(--muted)}
-    .feedback{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:14px}
-    .ok{background:rgba(6,182,212,0.12);color:#a7f0ff;border-left:3px solid #06b6d4}
-    .bad{background:rgba(255,60,60,0.08);color:#ffdede;border-left:3px solid #ef4444}
-    .warning{background:rgba(251,191,36,0.12);color:#fef3c7;border-left:3px solid #f59e0b}
-    .success{background:rgba(16,185,129,0.12);color:#a7f3d0;border-left:3px solid #10b981}
-    footer{margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.05);color:var(--muted);font-size:13px}
-    .voice-method{padding:10px;border-radius:6px;background:rgba(6,182,212,0.1);margin-top:8px;font-size:13px}
-    .progress-bar{width:100%;height:6px;background:rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;margin-top:8px}
-    .progress-fill{height:100%;background:linear-gradient(90deg,#06b6d4,#10b981);transition:width 0.3s ease;border-radius:10px}
-    .stage-indicator{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-    .stage-dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.1);transition:all 0.3s}
-    .stage-dot.active{background:var(--accent);box-shadow:0 0 8px var(--accent)}
-    .stage-dot.completed{background:var(--success)}
-    .stats{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
-    .stat-box{flex:1;min-width:150px;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.05)}
-    .stat-value{font-size:24px;font-weight:700;color:var(--accent)}
-    .stat-label{font-size:12px;color:var(--muted);margin-top:4px}
-    @media (max-width:640px){.form-row{flex-direction:column}.stats{flex-direction:column}}
+    
+    .btn-primary{
+      background:linear-gradient(135deg,#06b6d4,#0891b2);color:#000;
+      box-shadow:0 4px 16px rgba(6,182,212,0.3)
+    }
+    .btn-primary:hover:not(:disabled){
+      transform:translateY(-2px);box-shadow:0 6px 24px rgba(6,182,212,0.4)
+    }
+    
+    .btn-secondary{
+      background:rgba(255,255,255,0.05);color:var(--muted);
+      border:1px solid rgba(255,255,255,0.1)
+    }
+    .btn-secondary:hover:not(:disabled){
+      background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)
+    }
+    
+    .btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#000}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+    .btn-warning{background:linear-gradient(135deg,#f59e0b,#d97706);color:#000}
+    .btn-purple{background:linear-gradient(135deg,#a855f7,#9333ea);color:#fff}
+    
+    .btn-group{display:flex;gap:10px;flex-wrap:wrap}
+    
+    /* Lists */
+    .list{list-style:none;padding:0;margin:0}
+    .list-item{
+      background:rgba(255,255,255,0.02);border-radius:12px;
+      padding:16px;margin-bottom:12px;
+      border:1px solid rgba(255,255,255,0.05);
+      display:flex;justify-content:space-between;gap:16px;
+      transition:all 0.3s
+    }
+    .list-item:hover{
+      background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.15);
+      transform:translateX(-4px)
+    }
+    
+    /* Stage Cards */
+    .stage-card{
+      background:rgba(255,255,255,0.02);border-radius:12px;
+      padding:20px;margin-bottom:16px;
+      border:1px solid rgba(255,255,255,0.08);
+      transition:all 0.3s;position:relative
+    }
+    .stage-card.active{
+      border-color:var(--accent);
+      box-shadow:0 0 20px rgba(6,182,212,0.2)
+    }
+    .stage-card.completed{
+      border-color:var(--success);opacity:0.7
+    }
+    
+    .stage-header{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:12px
+    }
+    .stage-number{
+      width:40px;height:40px;border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--purple));
+      display:flex;align-items:center;justify-content:center;
+      font-weight:800;font-size:18px;color:#000
+    }
+    .stage-title{font-size:16px;font-weight:600;flex:1;margin:0 16px}
+    
+    .stage-config{
+      background:rgba(255,255,255,0.03);border-radius:8px;
+      padding:12px;margin-top:12px;border:1px solid rgba(255,255,255,0.05)
+    }
+    
+    /* Modal */
+    .modal{
+      display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.8);backdrop-filter:blur(5px);
+      z-index:1000;align-items:center;justify-content:center;
+      animation:fadeIn 0.3s
+    }
+    .modal.show{display:flex}
+    .modal-content{
+      background:linear-gradient(135deg,#0f1420 0%,#1a1f35 100%);
+      border-radius:20px;padding:30px;max-width:600px;width:90%;
+      border:1px solid rgba(255,255,255,0.1);
+      box-shadow:0 20px 60px rgba(0,0,0,0.8);
+      max-height:90vh;overflow-y:auto
+    }
+    .modal-header{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:20px;padding-bottom:16px;
+      border-bottom:1px solid rgba(255,255,255,0.1)
+    }
+    .modal-title{font-size:22px;font-weight:700;margin:0}
+    .close-btn{
+      background:rgba(255,255,255,0.1);border:none;
+      width:32px;height:32px;border-radius:50%;
+      cursor:pointer;font-size:20px;color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      transition:all 0.3s
+    }
+    .close-btn:hover{background:var(--danger);transform:rotate(90deg)}
+    
+    /* Progress */
+    .progress-bar{
+      width:100%;height:8px;background:rgba(255,255,255,0.05);
+      border-radius:10px;overflow:hidden;margin:16px 0
+    }
+    .progress-fill{
+      height:100%;background:linear-gradient(90deg,#06b6d4,#a855f7);
+      transition:width 0.5s ease;border-radius:10px
+    }
+    
+    /* Status */
+    .status{
+      padding:16px;border-radius:12px;margin:16px 0;
+      display:flex;align-items:center;gap:12px;font-weight:600
+    }
+    .status.ok{background:rgba(6,182,212,0.15);color:#a7f0ff;border-left:4px solid #06b6d4}
+    .status.success{background:rgba(16,185,129,0.15);color:#a7f3d0;border-left:4px solid #10b981}
+    .status.warning{background:rgba(245,158,11,0.15);color:#fef3c7;border-left:4px solid #f59e0b}
+    .status.bad{background:rgba(239,68,68,0.15);color:#ffdede;border-left:4px solid #ef4444}
+    
+    /* Stats */
+    .stats{display:flex;gap:16px;margin-top:20px}
+    .stat-box{
+      flex:1;background:rgba(255,255,255,0.03);border-radius:12px;
+      padding:20px;text-align:center;border:1px solid rgba(255,255,255,0.05)
+    }
+    .stat-value{
+      font-size:36px;font-weight:800;
+      background:linear-gradient(135deg,#06b6d4,#a855f7);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent
+    }
+    .stat-label{font-size:13px;color:var(--muted);margin-top:8px}
     
     /* Animations */
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-    .pulse{animation:pulse 2s ease-in-out infinite}
-    @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-    .slide-in{animation:slideIn 0.3s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .slide-up{animation:slideUp 0.4s ease}
+    
+    /* Responsive */
+    @media (max-width:768px){
+      .container{padding:12px}
+      header{padding:20px}
+      h1{font-size:24px}
+      .form-row{flex-direction:column}
+      .stats{flex-direction:column}
+      .modal-content{padding:20px}
+    }
+    
+    /* Settings Grid */
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+    @media (max-width:768px){.settings-grid{grid-template-columns:1fr}}
+    
+    .setting-item{
+      background:rgba(255,255,255,0.02);padding:16px;
+      border-radius:10px;border:1px solid rgba(255,255,255,0.05)
+    }
+    .setting-label{
+      font-size:13px;font-weight:600;color:var(--muted);
+      margin-bottom:8px;display:block
+    }
+    
+    /* Range Slider */
+    input[type="range"]{
+      width:100%;height:6px;border-radius:5px;
+      background:rgba(255,255,255,0.1);outline:none;
+      -webkit-appearance:none
+    }
+    input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none;width:18px;height:18px;
+      border-radius:50%;background:var(--accent);cursor:pointer;
+      box-shadow:0 2px 8px rgba(6,182,212,0.4)
+    }
+    
+    /* Checkbox */
+    input[type="checkbox"]{
+      width:20px;height:20px;cursor:pointer;
+      accent-color:var(--accent)
+    }
+    
+    .small{font-size:13px;color:var(--muted)}
   </style>
 </head>
 <body dir="rtl">
   <div class="container">
-    <header>
-      <div>
-        <h1>🎓 تطبيق تسميع الأسئلة والإجابات المتقدم</h1>
-        <p class="lead">أضف أسئلة وإجابات ثم ابدأ رحلة الحفظ بنظام مراحل تفاعلي مع نطق عربي احترافي</p>
-      </div>
+    <header class="slide-up">
+      <h1>🎓 تطبيق التسميع الذكي</h1>
+      <p class="lead">منصة تعليمية متقدمة مع مراحل قابلة للتخصيص الكامل</p>
     </header>
 
-    <section class="card slide-in">
-      <h2 style="font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px">
-        ➕ أضف سؤال وإجابة
-      </h2>
-      <div class="form-row" style="margin-bottom:8px">
-        <input type="text" id="questionInput" placeholder="أكتب السؤال هنا..." autocomplete="off" />
-        <input type="text" id="answerInput" placeholder="أكتب الإجابة هنا..." autocomplete="off" />
-        <button class="btn" id="addBtn">إضافة</button>
+    <div class="card slide-up">
+      <h2 class="card-title">➕ إضافة سؤال جديد</h2>
+      <div class="form-row">
+        <input type="text" id="questionInput" placeholder="اكتب السؤال..." />
+        <input type="text" id="answerInput" placeholder="اكتب الإجابة..." />
+        <button class="btn btn-primary" id="addBtn">إضافة</button>
       </div>
-      <div class="small">💡 يمكنك إضافة عدد غير محدود من الأسئلة. البيانات محفوظة خلال الجلسة.</div>
-    </section>
+    </div>
 
-    <section class="card slide-in">
-      <h2 style="font-size:16px;margin:0 0 12px">🔧 الإعدادات</h2>
-      
-      <div style="margin-bottom:14px">
-        <label style="display:block;margin-bottom:6px;font-size:14px;font-weight:600">طريقة النطق:</label>
-        <select id="voiceMethod" style="width:100%;max-width:400px;padding:10px">
-          <option value="google" selected>🌐 Google TTS (موصى به - نطق عربي ممتاز)</option>
-          <option value="browser">💻 متصفح (Web Speech API)</option>
-        </select>
-      </div>
-      
-      <div style="margin-bottom:14px">
-        <label style="display:block;margin-bottom:6px;font-size:14px;font-weight:600">سرعة النطق:</label>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" id="speechRate" min="0.5" max="1.5" step="0.1" value="1.0" style="flex:1;max-width:350px">
-          <span id="rateValue" style="font-size:15px;color:var(--accent);font-weight:600;min-width:50px">1.0x</span>
-        </div>
-      </div>
-      
-      <div style="margin-bottom:14px">
-        <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:8px;border-radius:6px;transition:all 0.2s" id="autoLabel">
-          <input type="checkbox" id="autoProgress" checked style="width:18px;height:18px;cursor:pointer">
-          <span>🔄 الانتقال التلقائي للمراحل (ينتقل تلقائياً بعد انتهاء كل مرحلة)</span>
-        </label>
-      </div>
-      
-      <div style="margin-bottom:14px">
-        <label style="display:block;margin-bottom:6px;font-size:14px;font-weight:600">مدة التوقف بين الأسئلة (ثانية):</label>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" id="delayTime" min="0.3" max="2" step="0.1" value="0.5" style="flex:1;max-width:350px">
-          <span id="delayValue" style="font-size:15px;color:var(--accent);font-weight:600;min-width:50px">0.5s</span>
-        </div>
-      </div>
-      
-      <div class="controls">
-        <button class="btn secondary" id="testVoice">🔊 اختبر الصوت</button>
-        <button class="btn success" id="startAll">▶️ ابدأ جميع المراحل</button>
-      </div>
-      <div id="voiceInfo" class="voice-method"></div>
-    </section>
-
-    <section class="card slide-in">
-      <h2 style="font-size:16px;margin:0 0 12px">📝 قائمة الأسئلة (<span id="qaCount">0</span>)</h2>
-      <div class="small" style="margin-bottom:12px">يمكنك حذف أو تشغيل أي سؤال بشكل فردي</div>
+    <div class="card slide-up">
+      <h2 class="card-title">📝 الأسئلة (<span id="qaCount">0</span>)</h2>
       <ul class="list" id="qaList"></ul>
-    </section>
+    </div>
 
-    <section class="card slide-in">
-      <h2 style="font-size:16px;margin:0 0 12px">🎯 المراحل التعليمية</h2>
-      
-      <div class="stage-indicator">
-        <div class="stage-dot" data-stage="1" title="المرحلة 1"></div>
-        <div class="stage-dot" data-stage="2" title="المرحلة 2"></div>
-        <div class="stage-dot" data-stage="3" title="المرحلة 3"></div>
-        <div class="stage-dot" data-stage="4" title="المرحلة 4"></div>
+    <div class="card slide-up">
+      <h2 class="card-title">⚙️ الإعدادات العامة</h2>
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label class="setting-label">🗣️ طريقة النطق</label>
+          <select id="voiceMethod">
+            <option value="google" selected>Google TTS (موصى به)</option>
+            <option value="browser">أصوات المتصفح</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">⚡ سرعة النطق: <span id="rateValue">1.0x</span></label>
+          <input type="range" id="speechRate" min="0.5" max="1.5" step="0.1" value="1.0">
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">⏱️ التوقف بين الأسئلة: <span id="delayValue">0.5s</span></label>
+          <input type="range" id="delayTime" min="0.3" max="2" step="0.1" value="0.5">
+        </div>
+        <div class="setting-item">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="autoProgress" checked>
+            <span>🔄 الانتقال التلقائي للمراحل</span>
+          </label>
+        </div>
       </div>
+      <button class="btn btn-secondary" id="testVoice">🔊 اختبار الصوت</button>
+    </div>
+
+    <div class="card slide-up">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 class="card-title" style="margin:0">🎯 المراحل التعليمية</h2>
+        <button class="btn btn-purple" id="addStageBtn">➕ إضافة مرحلة</button>
+      </div>
+      
+      <div id="stagesList"></div>
       
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill" style="width:0%"></div>
       </div>
       
-      <div class="controls" style="margin-top:16px">
-        <button class="btn" id="stage1">1️⃣ حفظ (س←ج ×3)</button>
-        <button class="btn" id="stage2">2️⃣ اختبار صوتي 🎤</button>
-        <button class="btn" id="stage3">3️⃣ استماع كامل 🎧</button>
-        <button class="btn" id="stage4">4️⃣ تسميع نهائي 📝</button>
-        <button class="btn danger" id="stopAll">⏹️ إيقاف</button>
+      <div class="btn-group" style="margin-top:20px">
+        <button class="btn btn-success" id="startAll">▶️ بدء جميع المراحل</button>
+        <button class="btn btn-danger" id="stopAll">⏹️ إيقاف</button>
       </div>
-
-      <div id="status" class="small" style="margin-top:12px;color:var(--muted);font-weight:600">📊 الحالة: جاهز للبدء</div>
-      <div id="feedback" class="feedback" style="display:none"></div>
+      
+      <div id="statusMsg" class="small" style="margin-top:16px;font-weight:600">📊 الحالة: جاهز</div>
+      <div id="feedback" style="display:none"></div>
       
       <div class="stats" id="statsContainer" style="display:none">
         <div class="stat-box">
           <div class="stat-value" id="correctCount">0</div>
-          <div class="stat-label">إجابات صحيحة</div>
+          <div class="stat-label">✅ صحيح</div>
         </div>
         <div class="stat-box">
           <div class="stat-value" id="totalCount">0</div>
-          <div class="stat-label">إجمالي الأسئلة</div>
+          <div class="stat-label">📝 الإجمالي</div>
         </div>
         <div class="stat-box">
           <div class="stat-value" id="percentageCount">0%</div>
-          <div class="stat-label">نسبة النجاح</div>
+          <div class="stat-label">🎯 النجاح</div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="card slide-in">
-      <h2 style="font-size:16px;margin:0 0 12px">⚙️ إدارة</h2>
-      <div class="controls">
-        <button class="btn secondary" id="clearStorage">🗑️ مسح كل الأسئلة</button>
-        <button class="btn secondary" id="exportData">📥 تصدير البيانات</button>
-        <button class="btn secondary" id="importData">📤 استيراد البيانات</button>
+    <div class="card slide-up">
+      <h2 class="card-title">🔧 أدوات</h2>
+      <div class="btn-group">
+        <button class="btn btn-secondary" id="exportData">📥 تصدير</button>
+        <button class="btn btn-secondary" id="importData">📤 استيراد</button>
+        <button class="btn btn-danger" id="clearAll">🗑️ مسح الكل</button>
       </div>
       <input type="file" id="fileInput" accept=".json" style="display:none">
-    </section>
+    </div>
+  </div>
 
-    <footer>
-      <div class="small">
-        <strong>💡 نصائح:</strong> للحصول على أفضل تجربة، استخدم سماعات الرأس وتأكد من اتصالك بالإنترنت.
-        التطبيق يستخدم Google TTS للنطق العربي الاحترافي.
+  <!-- Modal لإضافة/تعديل المراحل -->
+  <div class="modal" id="stageModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">➕ إضافة مرحلة جديدة</h3>
+        <button class="close-btn" id="closeModal">×</button>
       </div>
-      <div class="small" style="margin-top:8px">
-        تم التطوير بواسطة Claude AI | يعمل في المتصفح بدون خادم
+      
+      <div style="margin-bottom:16px">
+        <label class="setting-label">📌 اسم المرحلة</label>
+        <input type="text" id="stageName" placeholder="مثال: الحفظ السريع">
       </div>
-    </footer>
+      
+      <div style="margin-bottom:16px">
+        <label class="setting-label">🎭 نوع المرحلة</label>
+        <select id="stageType">
+          <option value="listen">🎧 الاستماع (يقرأ السؤال والإجابة)</option>
+          <option value="repeat">🔄 التكرار (يكرر عدة مرات)</option>
+          <option value="test">🎤 الاختبار (أنت تجيب بالصوت)</option>
+          <option value="reverse">🔁 عكسي (يقرأ الإجابة ثم السؤال)</option>
+          <option value="userRead">📖 أنت تقرأ (التطبيق يستمع لك)</option>
+          <option value="random">🎲 عشوائي (ترتيب عشوائي)</option>
+          <option value="quiz">❓ اختيارات متعددة</option>
+        </select>
+      </div>
+      
+      <div id="stageOptions"></div>
+      
+      <div class="btn-group" style="margin-top:20px">
+        <button class="btn btn-primary" id="saveStageBtn">💾 حفظ المرحلة</button>
+        <button class="btn btn-secondary" id="cancelStageBtn">❌ إلغاء</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // ========== المتغيرات العامة ==========
+    // ========== البيانات ==========
     let qa = [];
+    let stages = [
+      {id:1,name:'الحفظ الأساسي',type:'repeat',config:{times:3},enabled:true},
+      {id:2,name:'اختبار صوتي',type:'test',config:{},enabled:true},
+      {id:3,name:'الاستماع الكامل',type:'listen',config:{},enabled:true},
+      {id:4,name:'التسميع النهائي',type:'test',config:{},enabled:true}
+    ];
     let isProcessing = false;
     let shouldStop = false;
     let currentVoiceMethod = 'google';
     let speechRate = 1.0;
-    let autoProgress = true;
     let delayTime = 500;
-    let currentStage = 0;
-    let completedStages = new Set();
+    let autoProgress = true;
+    let editingStageId = null;
 
     // ========== العناصر ==========
     const qInput = document.getElementById('questionInput');
     const aInput = document.getElementById('answerInput');
-    const addBtn = document.getElementById('addBtn');
     const qaList = document.getElementById('qaList');
     const qaCount = document.getElementById('qaCount');
-    const status = document.getElementById('status');
+    const stagesList = document.getElementById('stagesList');
+    const statusMsg = document.getElementById('statusMsg');
     const feedback = document.getElementById('feedback');
-    const voiceInfo = document.getElementById('voiceInfo');
-    const voiceMethodSelect = document.getElementById('voiceMethod');
-    const speechRateSlider = document.getElementById('speechRate');
-    const rateValue = document.getElementById('rateValue');
-    const autoProgressCheck = document.getElementById('autoProgress');
-    const delayTimeSlider = document.getElementById('delayTime');
-    const delayValue = document.getElementById('delayValue');
     const progressFill = document.getElementById('progressFill');
     const statsContainer = document.getElementById('statsContainer');
-    const correctCountEl = document.getElementById('correctCount');
-    const totalCountEl = document.getElementById('totalCount');
-    const percentageCountEl = document.getElementById('percentageCount');
+    const stageModal = document.getElementById('stageModal');
+    const stageType = document.getElementById('stageType');
+    const stageOptions = document.getElementById('stageOptions');
 
     // ========== الإعدادات ==========
-    voiceMethodSelect.onchange = ()=>{
-      currentVoiceMethod = voiceMethodSelect.value;
-      updateVoiceInfo();
+    document.getElementById('voiceMethod').onchange = (e)=>{
+      currentVoiceMethod = e.target.value;
+    };
+    
+    document.getElementById('speechRate').oninput = (e)=>{
+      speechRate = parseFloat(e.target.value);
+      document.getElementById('rateValue').textContent = speechRate.toFixed(1) + 'x';
+    };
+    
+    document.getElementById('delayTime').oninput = (e)=>{
+      delayTime = parseFloat(e.target.value) * 1000;
+      document.getElementById('delayValue').textContent = (delayTime/1000).toFixed(1) + 's';
+    };
+    
+    document.getElementById('autoProgress').onchange = (e)=>{
+      autoProgress = e.target.checked;
     };
 
-    speechRateSlider.oninput = ()=>{
-      speechRate = parseFloat(speechRateSlider.value);
-      rateValue.textContent = speechRate.toFixed(1) + 'x';
-    };
+    // ========== وظائف مساعدة ==========
+    function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+    
+    function normalizeText(s){
+      if(!s) return '';
+      s = s.toString().replace(/[\u0610-\u061A\u064B-\u065F\u06D6-\u06ED]/g,'');
+      s = s.replace(/[\u2000-\u206F\u2E00-\u2E7F\`\~\!\@\#\$\%\^\&\*\(\)\-_\+=\[\]\\\{\}\|\;\:\"\'\<\>,\.\?\/]/g,'');
+      return s.replace(/\s+/g,' ').trim().toLowerCase();
+    }
+    
+    function showStatus(msg,type='ok'){
+      feedback.style.display='block';
+      feedback.className='status '+type;
+      feedback.textContent=msg;
+    }
+    
+    function hideStatus(){feedback.style.display='none'}
 
-    autoProgressCheck.onchange = ()=>{
-      autoProgress = autoProgressCheck.checked;
-    };
-
-    delayTimeSlider.oninput = ()=>{
-      delayTime = parseFloat(delayTimeSlider.value) * 1000;
-      delayValue.textContent = (delayTime/1000).toFixed(1) + 's';
-    };
-
-    function updateVoiceInfo(){
-      if(currentVoiceMethod === 'google'){
-        voiceInfo.innerHTML = '✅ يستخدم Google TTS - نطق عربي طبيعي وواضح';
-        voiceInfo.style.background = 'rgba(6,182,212,0.1)';
-        voiceInfo.style.color = '#a7f0ff';
+    // ========== النطق ==========
+    function speak(text,rate=null){
+      if(shouldStop) return Promise.resolve();
+      const actualRate = rate || speechRate;
+      
+      if(currentVoiceMethod==='google'){
+        return new Promise((resolve)=>{
+          const audio = new Audio();
+          audio.src = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=${encodeURIComponent(text)}`;
+          audio.playbackRate = actualRate;
+          audio.onended = ()=>resolve();
+          audio.onerror = ()=>resolve();
+          audio.play().catch(()=>resolve());
+        });
       } else {
-        voiceInfo.innerHTML = '⚠️ يستخدم أصوات المتصفح - قد يكون النطق أقل وضوحاً';
-        voiceInfo.style.background = 'rgba(251,191,36,0.1)';
-        voiceInfo.style.color = '#fef3c7';
+        return new Promise((resolve)=>{
+          const synth = window.speechSynthesis;
+          if(!synth){resolve();return}
+          synth.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          const voices = synth.getVoices();
+          const arabicVoice = voices.find(v=>v.lang.startsWith('ar')||v.name.includes('Arabic'));
+          if(arabicVoice){utter.voice=arabicVoice;utter.lang=arabicVoice.lang}
+          else{utter.lang='ar-SA'}
+          utter.rate = actualRate * 0.85;
+          utter.onend=()=>resolve();
+          utter.onerror=()=>resolve();
+          synth.speak(utter);
+        });
       }
     }
 
-    updateVoiceInfo();
+    document.getElementById('testVoice').onclick = async()=>{
+      showStatus('🔊 اختبار الصوت...','ok');
+      await speak('مرحباً، هذا اختبار للصوت العربي');
+      showStatus('✅ تم الاختبار','success');
+      setTimeout(hideStatus,2000);
+    };
 
-    // ========== وظائف مساعدة ==========
-    function normalizeText(s){
-      if(!s) return '';
-      s = s.toString();
-      s = s.replace(/[\u0610-\u061A\u064B-\u065F\u06D6-\u06ED]/g,'');
-      s = s.replace(/[\u2000-\u206F\u2E00-\u2E7F\`\~\!\@\#\$\%\^\&\*\(\)\-_\+=\[\]\\\{\}\|\;\:\"\'\<\>,\.\?\/]/g,'');
-      s = s.replace(/\s+/g,' ').trim().toLowerCase();
-      return s;
-    }
-
-    function escapeHtml(s){ 
-      return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); 
-    }
-
-    function delay(ms){ 
-      return new Promise(r=>setTimeout(r,ms)); 
-    }
-
-    function disableButtons(disabled){
-      document.querySelectorAll('.btn').forEach(btn => {
-        if(btn.id !== 'stopAll'){
-          btn.disabled = disabled;
-        }
+    // ========== التعرف على الصوت ==========
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    function recognizeOnce(){
+      return new Promise((res,rej)=>{
+        if(!SpeechRecognition){rej(new Error('غير مدعوم'));return}
+        const rec = new SpeechRecognition();
+        rec.lang='ar-SA';rec.interimResults=false;
+        rec.onresult=(ev)=>res(ev.results[0][0].transcript);
+        rec.onerror=(e)=>rej(e);
+        try{rec.start()}catch(e){rej(e)}
       });
     }
 
-    function updateProgress(percentage){
-      progressFill.style.width = percentage + '%';
+    // ========== إدارة الأسئلة ==========
+    function renderQA(){
+      qaCount.textContent = qa.length;
+      if(qa.length===0){
+        qaList.innerHTML='<li class="small">لا توجد أسئلة بعد</li>';
+        return;
+      }
+      qaList.innerHTML = qa.map((item,idx)=>`
+        <li class="list-item">
+          <div style="flex:1">
+            <div style="font-weight:600;margin-bottom:4px">${item.q}</div>
+            <div class="small">✅ ${item.a}</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" onclick="playQA(${idx})">🔊</button>
+            <button class="btn btn-danger" onclick="deleteQA(${idx})">🗑️</button>
+          </div>
+        </li>
+      `).join('');
     }
 
-    function updateStageIndicator(stage, isActive = false){
-      document.querySelectorAll('.stage-dot').forEach(dot => {
-        const dotStage = parseInt(dot.dataset.stage);
-        dot.classList.remove('active');
-        if(dotStage < stage){
-          dot.classList.add('completed');
-        } else if(dotStage === stage && isActive){
-          dot.classList.add('active');
-        } else if(dotStage > stage){
-          dot.classList.remove('completed');
-        }
+    document.getElementById('addBtn').onclick=()=>{
+      const q = qInput.value.trim();
+      const a = aInput.value.trim();
+      if(!q||!a){showStatus('⚠️ أكمل السؤال والإجابة','warning');return}
+      qa.push({q,a});
+      renderQA();
+      qInput.value='';aInput.value='';qInput.focus();
+      showStatus('✅ تم الإضافة','success');
+      setTimeout(hideStatus,2000);
+    };
+
+    aInput.onkeypress=(e)=>{if(e.key==='Enter')document.getElementById('addBtn').click()};
+
+    window.playQA = async(idx)=>{
+      await speak(qa[idx].q);
+      await delay(delayTime);
+      await speak(qa[idx].a);
+    };
+
+    window.deleteQA = (idx)=>{
+      if(confirm('حذف السؤال؟')){
+        qa.splice(idx,1);
+        renderQA();
+      }
+    };
+
+    // ========== إدارة المراحل ==========
+    function renderStages(){
+      stagesList.innerHTML = stages.filter(s=>s.enabled).map((stage,idx)=>{
+        const icons = {
+          listen:'🎧',repeat:'🔄',test:'🎤',reverse:'🔁',
+          userRead:'📖',random:'🎲',quiz:'❓'
+        };
+        return `
+          <div class="stage-card" data-id="${stage.id}">
+            <div class="stage-header">
+              <div class="stage-number">${idx+1}</div>
+              <div class="stage-title">${icons[stage.type]} ${stage.name}</div>
+              <div>
+                <button class="btn btn-secondary" onclick="editStage(${stage.id})">✏️</button>
+                <button class="btn btn-secondary" onclick="runSingleStage(${stage.id})">▶️</button>
+                <button class="btn btn-danger" onclick="deleteStage(${stage.id})">🗑️</button>
+              </div>
+            </div>
+            <div class="small">${getStageDescription(stage)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getStageDescription(stage){
+      const descriptions = {
+        listen: 'يقرأ السؤال والإجابة مرة واحدة',
+        repeat: `يكرر السؤال والإجابة ${stage.config.times || 3} مرات`,
+        test: 'يسألك ويستمع لإجابتك بالميكروفون',
+        reverse: 'يقرأ الإجابة أولاً ثم السؤال',
+        userRead: 'أنت تقرأ السؤال والإجابة والتطبيق يستمع',
+        random: 'يعرض الأسئلة بترتيب عشوائي',
+        quiz: 'اختبار اختيارات متعددة'
+      };
+      return descriptions[stage.type] || 'مرحلة مخصصة';
+    }
+
+    window.editStage = (id)=>{
+      editingStageId = id;
+      const stage = stages.find(s=>s.id===id);
+      document.getElementById('modalTitle').textContent = '✏️ تعديل المرحلة';
+      document.getElementById('stageName').value = stage.name;
+      document.getElementById('stageType').value = stage.type;
+      updateStageOptions(stage.type, stage.config);
+      stageModal.classList.add('show');
+    };
+
+    window.deleteStage = (id)=>{
+      if(confirm('حذف هذه المرحلة؟')){
+        const stage = stages.find(s=>s.id===id);
+        stage.enabled = false;
+        renderStages();
+        showStatus('✅ تم حذف المرحلة','success');
+        setTimeout(hideStatus,2000);
+      }
+    };
+
+    window.runSingleStage = async(id)=>{
+      if(isProcessing) return;
+      if(qa.length===0){showStatus('⚠️ أضف أسئلة أولاً','warning');return}
+      
+      shouldStop = false;
+      isProcessing = true;
+      const stage = stages.find(s=>s.id===id);
+      
+      document.querySelectorAll('.stage-card').forEach(card=>{
+        card.classList.remove('active');
+        if(parseInt(card.dataset.id)===id) card.classList.add('active');
       });
+      
+      await executeStage(stage);
+      
+      document.querySelectorAll('.stage-card').forEach(card=>{
+        if(parseInt(card.dataset.id)===id) card.classList.add('completed');
+      });
+      
+      isProcessing = false;
+    };
+
+    // ========== Modal ==========
+    document.getElementById('addStageBtn').onclick = ()=>{
+      editingStageId = null;
+      document.getElementById('modalTitle').textContent = '➕ إضافة مرحلة جديدة';
+      document.getElementById('stageName').value = '';
+      document.getElementById('stageType').value = 'listen';
+      updateStageOptions('listen');
+      stageModal.classList.add('show');
+    };
+
+    document.getElementById('closeModal').onclick = ()=>{
+      stageModal.classList.remove('show');
+    };
+
+    document.getElementById('cancelStageBtn').onclick = ()=>{
+      stageModal.classList.remove('show');
+    };
+
+    document.getElementById('stageType').onchange = (e)=>{
+      updateStageOptions(e.target.value);
+    };
+
+    function updateStageOptions(type, config={}){
+      let html = '';
+      
+      if(type === 'repeat'){
+        html = `
+          <div style="margin-bottom:16px">
+            <label class="setting-label">🔢 عدد مرات التكرار: <span id="timesValue">${config.times||3}</span></label>
+            <input type="range" id="repeatTimes" min="1" max="10" step="1" value="${config.times||3}">
+          </div>
+        `;
+      } else if(type === 'test' || type === 'userRead'){
+        html = `
+          <div style="margin-bottom:16px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="showCorrectAnswer" ${config.showCorrectAnswer?'checked':''}>
+              <span>إظهار الإجابة الصحيحة عند الخطأ</span>
+            </label>
+          </div>
+        `;
+      } else if(type === 'quiz'){
+        html = `
+          <div style="margin-bottom:16px">
+            <label class="setting-label">🔢 عدد الخيارات: <span id="optionsValue">${config.numOptions||4}</span></label>
+            <input type="range" id="numOptions" min="2" max="6" step="1" value="${config.numOptions||4}">
+          </div>
+        `;
+      }
+      
+      stageOptions.innerHTML = html;
+      
+      if(type === 'repeat'){
+        document.getElementById('repeatTimes').oninput = (e)=>{
+          document.getElementById('timesValue').textContent = e.target.value;
+        };
+      } else if(type === 'quiz'){
+        document.getElementById('numOptions').oninput = (e)=>{
+          document.getElementById('optionsValue').textContent = e.target.value;
+        };
+      }
     }
 
-    function showStats(correct, total){
-      const percentage = total > 0 ? Math.round(correct/total*100) : 0;
-      correctCountEl.textContent = correct;
-      totalCountEl.textContent = total;
-      percentageCountEl.textContent = percentage + '%';
+    document.getElementById('saveStageBtn').onclick = ()=>{
+      const name = document.getElementById('stageName').value.trim();
+      const type = document.getElementById('stageType').value;
+      
+      if(!name){showStatus('⚠️ أدخل اسم المرحلة','warning');return}
+      
+      const config = {};
+      
+      if(type === 'repeat'){
+        config.times = parseInt(document.getElementById('repeatTimes').value);
+      } else if(type === 'test' || type === 'userRead'){
+        config.showCorrectAnswer = document.getElementById('showCorrectAnswer')?.checked || false;
+      } else if(type === 'quiz'){
+        config.numOptions = parseInt(document.getElementById('numOptions').value);
+      }
+      
+      if(editingStageId){
+        const stage = stages.find(s=>s.id===editingStageId);
+        stage.name = name;
+        stage.type = type;
+        stage.config = config;
+      } else {
+        const newId = Math.max(...stages.map(s=>s.id), 0) + 1;
+        stages.push({id:newId, name, type, config, enabled:true});
+      }
+      
+      renderStages();
+      stageModal.classList.remove('show');
+      showStatus('✅ تم حفظ المرحلة','success');
+      setTimeout(hideStatus,2000);
+    };
+
+    // ========== تنفيذ المراحل ==========
+    async function executeStage(stage){
+      statusMsg.textContent = `▶️ ${stage.name}`;
+      showStatus(`🎯 ${stage.name}...`,'ok');
+      
+      let items = [...qa];
+      if(stage.type === 'random'){
+        items = items.sort(()=>Math.random()-0.5);
+      }
+      
+      if(stage.type === 'listen'){
+        await executeListen(items);
+      } else if(stage.type === 'repeat'){
+        await executeRepeat(items, stage.config.times || 3);
+      } else if(stage.type === 'test'){
+        await executeTest(items, stage.config);
+      } else if(stage.type === 'reverse'){
+        await executeReverse(items);
+      } else if(stage.type === 'userRead'){
+        await executeUserRead(items, stage.config);
+      } else if(stage.type === 'quiz'){
+        await executeQuiz(items, stage.config);
+      }
+      
+      if(!shouldStop){
+        showStatus(`✅ انتهت ${stage.name}`,'success');
+      }
+    }
+
+    async function executeListen(items){
+      for(let i=0; i<items.length && !shouldStop; i++){
+        statusMsg.textContent = `🎧 سؤال ${i+1} من ${items.length}`;
+        await speak('السؤال ' + (i+1));
+        await delay(delayTime*0.4);
+        await speak(items[i].q);
+        await delay(delayTime*0.6);
+        await speak('الإجابة');
+        await delay(delayTime*0.4);
+        await speak(items[i].a);
+        await delay(delayTime);
+      }
+    }
+
+    async function executeRepeat(items, times){
+      for(let i=0; i<items.length && !shouldStop; i++){
+        statusMsg.textContent = `🔄 سؤال ${i+1} من ${items.length}`;
+        for(let r=0; r<times && !shouldStop; r++){
+          await speak(items[i].q);
+          await delay(delayTime*0.6);
+          await speak(items[i].a);
+          await delay(delayTime*0.8);
+        }
+      }
+    }
+
+    async function executeTest(items, config){
+      if(!SpeechRecognition){
+        showStatus('❌ التعرف على الصوت غير مدعوم','bad');
+        return;
+      }
+      
+      let correct = 0;
+      for(let i=0; i<items.length && !shouldStop; i++){
+        statusMsg.textContent = `🎤 سؤال ${i+1} من ${items.length}`;
+        await speak(items[i].q);
+        await delay(delayTime*0.5);
+        showStatus(`🎤 أجب على السؤال ${i+1}...`,'ok');
+        
+        try{
+          const userAnswer = await recognizeOnce();
+          const isCorrect = normalizeText(userAnswer) === normalizeText(items[i].a);
+          
+          if(isCorrect){
+            correct++;
+            showStatus(`✅ (${i+1}) صحيح!`,'success');
+            await speak('صحيح');
+          } else {
+            showStatus(`❌ (${i+1}) خاطئ: قلت "${userAnswer}"${config.showCorrectAnswer?' | الصواب: '+items[i].a:''}`,'bad');
+            await speak('خاطئ');
+            if(config.showCorrectAnswer){
+              await delay(delayTime*0.4);
+              await speak('الإجابة الصحيحة');
+              await delay(delayTime*0.3);
+              await speak(items[i].a);
+            }
+          }
+          await delay(delayTime);
+        }catch(e){
+          showStatus('⚠️ لم يتم سماع الإجابة','warning');
+          await delay(delayTime*1.5);
+        }
+      }
+      
+      const perc = Math.round(correct/items.length*100);
+      document.getElementById('correctCount').textContent = correct;
+      document.getElementById('totalCount').textContent = items.length;
+      document.getElementById('percentageCount').textContent = perc+'%';
       statsContainer.style.display = 'flex';
     }
 
-    function hideStats(){
-      statsContainer.style.display = 'none';
+    async function executeReverse(items){
+      for(let i=0; i<items.length && !shouldStop; i++){
+        statusMsg.textContent = `🔁 سؤال ${i+1} من ${items.length}`;
+        await speak('الإجابة');
+        await delay(delayTime*0.4);
+        await speak(items[i].a);
+        await delay(delayTime*0.8);
+        await speak('السؤال');
+        await delay(delayTime*0.4);
+        await speak(items[i].q);
+        await delay(delayTime);
+      }
     }
 
-    function showFeedback(msg, type='ok'){
-      feedback.style.display = 'block';
-      feedback.textContent = msg;
-      feedback.className = 'feedback slide-in ' + type;
-    }
-
-    // ========== إدارة القائمة ==========
-    function updateQACount(){
-      qaCount.textContent = qa.length;
-    }
-
-    function renderList(){
-      qaList.innerHTML = '';
-      if(qa.length===0){
-        qaList.innerHTML = '<li class="small">لا توجد أسئلة بعد. ابدأ بإضافة أول سؤال!</li>';
-        updateQACount();
+    async function executeUserRead(items, config){
+      if(!SpeechRecognition){
+        showStatus('❌ التعرف على الصوت غير مدعوم','bad');
         return;
       }
       
-      qa.forEach((item,idx)=>{
-        const li = document.createElement('li'); 
-        li.className='item';
-        li.innerHTML = `
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:15px">${escapeHtml(item.q)}</div>
-            <div class="meta">✅ الإجابة: ${escapeHtml(item.a)}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
-            <button class="btn secondary" data-idx="${idx}" style="padding:6px 12px;font-size:13px">🗑️ حذف</button>
-            <button class="btn secondary" data-play="${idx}" style="padding:6px 12px;font-size:13px">🔊 تشغيل</button>
-          </div>
-        `;
-        qaList.appendChild(li);
-      });
-
-      qaList.querySelectorAll('button[data-idx]').forEach(b=>{
-        b.onclick = ()=>{ 
-          const i = +b.dataset.idx;
-          if(confirm('هل تريد حذف هذا السؤال؟')){
-            qa.splice(i,1); 
-            renderList();
-            showFeedback('تم الحذف ✓','ok');
-            setTimeout(()=>feedback.style.display='none', 2000);
+      for(let i=0; i<items.length && !shouldStop; i++){
+        statusMsg.textContent = `📖 سؤال ${i+1} من ${items.length}`;
+        showStatus(`📖 اقرأ السؤال ${i+1} بصوت واضح...`,'ok');
+        
+        try{
+          const userQ = await recognizeOnce();
+          await delay(delayTime*0.5);
+          showStatus(`📖 الآن اقرأ الإجابة...`,'ok');
+          const userA = await recognizeOnce();
+          
+          const qCorrect = normalizeText(userQ) === normalizeText(items[i].q);
+          const aCorrect = normalizeText(userA) === normalizeText(items[i].a);
+          
+          if(qCorrect && aCorrect){
+            showStatus(`✅ (${i+1}) قراءة صحيحة!`,'success');
+            await speak('ممتاز');
+          } else {
+            showStatus(`⚠️ (${i+1}) تحقق من القراءة`,'warning');
+            if(!qCorrect && config.showCorrectAnswer){
+              await speak('السؤال الصحيح');
+              await delay(delayTime*0.3);
+              await speak(items[i].q);
+            }
+            if(!aCorrect && config.showCorrectAnswer){
+              await speak('الإجابة الصحيحة');
+              await delay(delayTime*0.3);
+              await speak(items[i].a);
+            }
           }
+          await delay(delayTime);
+        }catch(e){
+          showStatus('⚠️ لم يتم سماع القراءة','warning');
+          await delay(delayTime*1.5);
         }
-      });
-      
-      qaList.querySelectorAll('button[data-play]').forEach(b=>{
-        b.onclick = ()=>{ 
-          const i = +b.dataset.play; 
-          speakQA(qa[i].q, qa[i].a); 
-        }
-      });
-      
-      updateQACount();
-    }
-
-    addBtn.onclick = ()=>{
-      const q = qInput.value.trim();
-      const a = aInput.value.trim();
-      if(!q || !a){ 
-        showFeedback('⚠️ يجب كتابة السؤال والإجابة قبل الإضافة','warning'); 
-        return; 
       }
-      qa.push({q,a}); 
-      renderList(); 
-      qInput.value=''; 
-      aInput.value=''; 
-      qInput.focus(); 
-      showFeedback('✅ تم إضافة السؤال بنجاح','success');
-      setTimeout(()=>feedback.style.display='none', 2000);
     }
 
-    // Enter للإضافة
-    aInput.addEventListener('keypress', (e)=>{
-      if(e.key === 'Enter') addBtn.click();
-    });
-
-    document.getElementById('clearStorage').onclick = ()=>{
-      if(!confirm('⚠️ هل أنت متأكد من حذف جميع الأسئلة؟ هذا الإجراء لا يمكن التراجع عنه.')) return; 
-      qa=[]; 
-      renderList(); 
-      hideStats();
-      completedStages.clear();
-      updateStageIndicator(0);
-      updateProgress(0);
-      showFeedback('✅ تم حذف جميع الأسئلة','success');
+    async function executeQuiz(items, config){
+      const numOptions = config.numOptions || 4;
+      let correct = 0;
+      
+      for(let i=0; i<items.length && !shouldStop; i++){
+        statusMsg.textContent = `❓ سؤال ${i+1} من ${items.length}`;
+        
+        // إنشاء خيارات
+        const options = [items[i].a];
+        const otherAnswers = items.filter((_,idx)=>idx!==i).map(item=>item.a);
+        while(options.length < numOptions && otherAnswers.length > 0){
+          const randomIdx = Math.floor(Math.random() * otherAnswers.length);
+          options.push(otherAnswers.splice(randomIdx, 1)[0]);
+        }
+        options.sort(()=>Math.random()-0.5);
+        const correctIdx = options.indexOf(items[i].a) + 1;
+        
+        // قراءة السؤال
+        await speak(items[i].q);
+        await delay(delayTime*0.6);
+        
+        // قراءة الخيارات
+        for(let j=0; j<options.length; j++){
+          await speak(`الخيار ${j+1}`);
+          await delay(delayTime*0.3);
+          await speak(options[j]);
+          await delay(delayTime*0.5);
+        }
+        
+        showStatus(`❓ اختر رقم الخيار الصحيح (1-${numOptions})...`,'ok');
+        
+        try{
+          const userAnswer = await recognizeOnce();
+          const userNum = parseInt(userAnswer.match(/\d+/)?.[0] || '0');
+          
+          if(userNum === correctIdx){
+            correct++;
+            showStatus(`✅ (${i+1}) إجابة صحيحة!`,'success');
+            await speak('صحيح');
+          } else {
+            showStatus(`❌ (${i+1}) خاطئ | الصواب: ${correctIdx}`,'bad');
+            await speak(`خاطئ الإجابة الصحيحة الخيار ${correctIdx}`);
+          }
+          await delay(delayTime);
+        }catch(e){
+          showStatus('⚠️ لم يتم سماع الإجابة','warning');
+          await delay(delayTime*1.5);
+        }
+      }
+      
+      const perc = Math.round(correct/items.length*100);
+      document.getElementById('correctCount').textContent = correct;
+      document.getElementById('totalCount').textContent = items.length;
+      document.getElementById('percentageCount').textContent = perc+'%';
+      statsContainer.style.display = 'flex';
     }
 
-    // ========== تصدير واستيراد ==========
+    // ========== تشغيل جميع المراحل ==========
+    document.getElementById('startAll').onclick = async()=>{
+      if(isProcessing) return;
+      if(qa.length===0){showStatus('⚠️ أضف أسئلة أولاً','warning');return}
+      
+      const enabledStages = stages.filter(s=>s.enabled);
+      if(!confirm(`🚀 بدء ${enabledStages.length} مراحل؟`)) return;
+      
+      shouldStop = false;
+      isProcessing = true;
+      statsContainer.style.display = 'none';
+      
+      for(let i=0; i<enabledStages.length && !shouldStop; i++){
+        const stage = enabledStages[i];
+        progressFill.style.width = ((i/enabledStages.length)*100)+'%';
+        
+        document.querySelectorAll('.stage-card').forEach(card=>{
+          card.classList.remove('active');
+          if(parseInt(card.dataset.id)===stage.id) card.classList.add('active');
+        });
+        
+        await executeStage(stage);
+        
+        document.querySelectorAll('.stage-card').forEach(card=>{
+          if(parseInt(card.dataset.id)===stage.id){
+            card.classList.remove('active');
+            card.classList.add('completed');
+          }
+        });
+        
+        if(autoProgress && i < enabledStages.length-1 && !shouldStop){
+          await delay(3000);
+          showStatus('⏩ الانتقال للمرحلة التالية...','ok');
+          await delay(2000);
+        }
+      }
+      
+      progressFill.style.width = '100%';
+      if(!shouldStop){
+        showStatus('🎊 تم إكمال جميع المراحل!','success');
+        await speak('تهانينا! لقد أكملت جميع المراحل');
+      }
+      
+      isProcessing = false;
+    };
+
+    document.getElementById('stopAll').onclick = ()=>{
+      shouldStop = true;
+      isProcessing = false;
+      statusMsg.textContent = '⏹️ تم الإيقاف';
+      showStatus('⏹️ توقف','warning');
+      if(window.speechSynthesis) window.speechSynthesis.cancel();
+    };
+
+    // ========== التصدير والاستيراد ==========
     document.getElementById('exportData').onclick = ()=>{
-      if(qa.length === 0){
-        showFeedback('⚠️ لا توجد أسئلة للتصدير','warning');
-        return;
-      }
-      const dataStr = JSON.stringify(qa, null, 2);
-      const dataBlob = new Blob([dataStr], {type: 'application/json'});
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'اسئلة-وإجابات-' + new Date().toISOString().split('T')[0] + '.json';
-      link.click();
+      const data = {qa, stages};
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'تسميع-'+new Date().toISOString().split('T')[0]+'.json';
+      a.click();
       URL.revokeObjectURL(url);
-      showFeedback('✅ تم تصدير البيانات','success');
+      showStatus('✅ تم التصدير','success');
+      setTimeout(hideStatus,2000);
     };
 
     document.getElementById('importData').onclick = ()=>{
@@ -428,502 +1018,38 @@
       const reader = new FileReader();
       reader.onload = (ev)=>{
         try{
-          const imported = JSON.parse(ev.target.result);
-          if(Array.isArray(imported)){
-            qa = imported;
-            renderList();
-            showFeedback('✅ تم استيراد ' + qa.length + ' سؤال','success');
-          } else {
-            showFeedback('❌ ملف غير صالح','bad');
-          }
+          const data = JSON.parse(ev.target.result);
+          if(data.qa) qa = data.qa;
+          if(data.stages) stages = data.stages;
+          renderQA();
+          renderStages();
+          showStatus('✅ تم الاستيراد','success');
         }catch(err){
-          showFeedback('❌ خطأ في قراءة الملف','bad');
+          showStatus('❌ ملف غير صالح','bad');
         }
       };
       reader.readAsText(file);
       e.target.value = '';
     };
 
-    renderList();
-
-    // ========== نظام النطق ==========
-    function speakWithGoogle(text, rate = 1.0){
-      return new Promise((resolve)=>{
-        try{
-          const audio = new Audio();
-          const encodedText = encodeURIComponent(text);
-          audio.src = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=${encodedText}`;
-          audio.playbackRate = rate;
-          
-          audio.onended = ()=> resolve();
-          audio.onerror = ()=> {
-            console.error('خطأ في Google TTS');
-            resolve();
-          };
-          
-          audio.play().catch(e => {
-            console.error('خطأ في تشغيل الصوت:', e);
-            resolve();
-          });
-        } catch(e){
-          console.error('خطأ:', e);
-          resolve();
-        }
-      });
-    }
-
-    function speakWithBrowser(text, rate = 1.0){
-      return new Promise((resolve)=>{
-        const synth = window.speechSynthesis;
-        if(!synth){
-          resolve();
-          return;
-        }
-
-        synth.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
-        
-        const voices = synth.getVoices();
-        const arabicVoice = voices.find(v => 
-          v.lang.startsWith('ar') || v.name.includes('Arabic')
-        );
-        
-        if(arabicVoice){
-          utter.voice = arabicVoice;
-          utter.lang = arabicVoice.lang;
-        } else {
-          utter.lang = 'ar-SA';
-        }
-        
-        utter.rate = rate * 0.85;
-        utter.pitch = 1.0;
-        utter.volume = 1.0;
-        
-        utter.onend = ()=>resolve();
-        utter.onerror = ()=>resolve();
-        
-        synth.speak(utter);
-      });
-    }
-
-    function speak(text, rate = null){
-      if(shouldStop) return Promise.resolve();
-      const actualRate = rate !== null ? rate : speechRate;
-      
-      if(currentVoiceMethod === 'google'){
-        return speakWithGoogle(text, actualRate);
-      } else {
-        return speakWithBrowser(text, actualRate);
+    document.getElementById('clearAll').onclick = ()=>{
+      if(confirm('⚠️ حذف كل شيء؟')){
+        qa = [];
+        stages = stages.map(s=>({...s,enabled:false}));
+        renderQA();
+        renderStages();
+        statsContainer.style.display = 'none';
+        showStatus('✅ تم المسح','success');
       }
-    }
-
-    async function speakQA(q,a){
-      if(isProcessing) return;
-      isProcessing = true;
-      status.textContent = '🔊 تشغيل سؤال واحد...';
-      await speak(q);
-      await delay(delayTime);
-      await speak(a);
-      status.textContent = '📊 جاهز للبدء';
-      isProcessing = false;
-    }
-
-    // ========== اختبار الصوت ==========
-    document.getElementById('testVoice').onclick = async ()=>{
-      if(isProcessing) return;
-      showFeedback('🔊 جاري اختبار الصوت...','ok');
-      await speak('مرحباً، هذا اختبار للصوت العربي. السرعة الحالية ' + speechRate.toFixed(1));
-      showFeedback('✅ تم اختبار الصوت بنجاح','success');
-      setTimeout(()=>feedback.style.display='none', 3000);
     };
 
-    // ========== إيقاف ==========
-    document.getElementById('stopAll').onclick = ()=>{
-      shouldStop = true;
-      isProcessing = false;
-      disableButtons(false);
-      status.textContent = '⏹️ تم الإيقاف';
-      showFeedback('⏹️ تم إيقاف العملية','warning');
-      if(window.speechSynthesis) window.speechSynthesis.cancel();
-    };
-
-    // ========== المراحل ==========
+    // ========== التهيئة ==========
+    renderQA();
+    renderStages();
     
-    // المرحلة 1: حفظ
-    async function runStage1(){
-      if(qa.length===0){ 
-        showFeedback('⚠️ لا توجد أسئلة لتشغيل المرحلة 1','warning'); 
-        return false; 
-      }
-      
-      currentStage = 1;
-      updateStageIndicator(1, true);
-      status.textContent = '🎯 المرحلة 1 - الحفظ';
-      showFeedback('🎯 المرحلة 1: سيتم نطق كل سؤال ثم إجابته 3 مرات','ok');
-      
-      for(let i=0; i<qa.length && !shouldStop; i++){
-        const {q,a} = qa[i];
-        status.textContent = `🎯 المرحلة 1 - سؤال ${i+1} من ${qa.length}`;
-        updateProgress(((i+1)/qa.length) * 25);
-        
-        for(let r=0; r<3 && !shouldStop; r++){
-          await speak(q);
-          await delay(delayTime * 0.6);
-          await speak(a);
-          await delay(delayTime * 0.8);
-        }
-      }
-      
-      if(shouldStop) return false;
-      
-      completedStages.add(1);
-      updateStageIndicator(1);
-      status.textContent = '✅ انتهت المرحلة 1';
-      showFeedback('✅ انتهت المرحلة 1 - الحفظ بنجاح','success');
-      return true;
-    }
-
-    document.getElementById('stage1').onclick = async ()=>{
-      if(isProcessing) return;
-      shouldStop = false;
-      isProcessing = true;
-      disableButtons(true);
-      hideStats();
-      
-      await runStage1();
-      
-      isProcessing = false;
-      disableButtons(false);
-    };
-
-    // المرحلة 2: اختبار صوتي
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-    
-    function recognizeOnce(lang='ar-SA'){
-      return new Promise((res,rej)=>{
-        if(!SpeechRecognition){ 
-          rej(new Error('متصفحك لا يدعم SpeechRecognition')); 
-          return; 
-        }
-        
-        const rec = new SpeechRecognition();
-        rec.lang = lang; 
-        rec.interimResults = false; 
-        rec.maxAlternatives = 1;
-        
-        rec.onresult = (ev)=>{ 
-          const txt = ev.results[0][0].transcript; 
-          res(txt); 
-        };
-        
-        rec.onerror = (e)=>rej(e);
-        rec.onend = ()=>{};
-        
-        try{ 
-          rec.start(); 
-        }catch(e){ 
-          rej(e); 
-        }
-      });
-    }
-
-    async function runStage2(){
-      if(qa.length===0){ 
-        showFeedback('⚠️ لا توجد أسئلة للاختبار','warning'); 
-        return false; 
-      }
-      if(!SpeechRecognition){ 
-        showFeedback('❌ ميزة التعرف على الصوت غير متاحة. استخدم Chrome/Edge.','bad'); 
-        return false; 
-      }
-      
-      currentStage = 2;
-      updateStageIndicator(2, true);
-      status.textContent = '🎤 المرحلة 2 - اختبار صوتي';
-      let correct = 0;
-      
-      for(let i=0; i<qa.length && !shouldStop; i++){
-        const {q,a} = qa[i];
-        updateProgress(25 + ((i+1)/qa.length) * 25);
-        
-        await speak(q);
-        await delay(delayTime * 0.5);
-        
-        status.textContent = `🎤 سؤال ${i+1} من ${qa.length} - اجب الآن`;
-        showFeedback(`🎤 السؤال ${i+1}: استمع وأجِب بصوت واضح`,'ok');
-        
-        try{
-          const userTxt = await recognizeOnce('ar-SA');
-          const userNorm = normalizeText(userTxt);
-          const answerNorm = normalizeText(a);
-          const isCorrect = (userNorm === answerNorm);
-          
-          if(isCorrect){ 
-            correct++; 
-            showFeedback(`✅ (${i+1}) إجابة صحيحة: "${userTxt}"`,'success'); 
-            await speak('ممتاز، إجابة صحيحة'); 
-          } else { 
-            showFeedback(`❌ (${i+1}) خاطئ - قلت: "${userTxt}" | الصواب: "${a}"`,'bad'); 
-            await speak('إجابة خاطئة');
-            await delay(delayTime * 0.4);
-            await speak('الإجابة الصحيحة هي');
-            await delay(delayTime * 0.3);
-            await speak(a); 
-          }
-          await delay(delayTime);
-        }catch(e){ 
-          showFeedback(`⚠️ (${i+1}) لم يتم سماع إجابتك - تأكد من الميكروفون`,'warning'); 
-          await delay(delayTime * 2);
-        }
-      }
-      
-      if(shouldStop) return false;
-      
-      showStats(correct, qa.length);
-      completedStages.add(2);
-      updateStageIndicator(2);
-      
-      const percentage = Math.round(correct/qa.length*100);
-      status.textContent = `✅ انتهت المرحلة 2 - النتيجة: ${correct}/${qa.length} (${percentage}%)`;
-      showFeedback(`✅ انتهت المرحلة 2! النتيجة: ${correct} من ${qa.length} (${percentage}%)`, 
-        percentage >= 80 ? 'success' : 'warning');
-      return true;
-    }
-
-    document.getElementById('stage2').onclick = async ()=>{
-      if(isProcessing) return;
-      shouldStop = false;
-      isProcessing = true;
-      disableButtons(true);
-      
-      await runStage2();
-      
-      isProcessing = false;
-      disableButtons(false);
-    };
-
-    // المرحلة 3: استماع كامل
-    async function runStage3(){
-      if(qa.length===0){ 
-        showFeedback('⚠️ لا توجد أسئلة للاستماع','warning'); 
-        return false; 
-      }
-      
-      currentStage = 3;
-      updateStageIndicator(3, true);
-      status.textContent = '🎧 المرحلة 3 - استماع كامل';
-      showFeedback('🎧 المرحلة 3: الاستماع لجميع الأسئلة والإجابات','ok');
-      
-      for(let i=0; i<qa.length && !shouldStop; i++){
-        status.textContent = `🎧 سؤال ${i+1} من ${qa.length}`;
-        updateProgress(50 + ((i+1)/qa.length) * 25);
-        
-        await speak('السؤال ' + (i+1));
-        await delay(delayTime * 0.4);
-        await speak(qa[i].q);
-        await delay(delayTime * 0.6);
-        await speak('الإجابة');
-        await delay(delayTime * 0.4);
-        await speak(qa[i].a);
-        await delay(delayTime);
-      }
-      
-      if(shouldStop) return false;
-      
-      completedStages.add(3);
-      updateStageIndicator(3);
-      status.textContent = '✅ انتهت المرحلة 3';
-      showFeedback('✅ انتهت المرحلة 3 - الاستماع الكامل','success');
-      return true;
-    }
-
-    document.getElementById('stage3').onclick = async ()=>{
-      if(isProcessing) return;
-      shouldStop = false;
-      isProcessing = true;
-      disableButtons(true);
-      hideStats();
-      
-      await runStage3();
-      
-      isProcessing = false;
-      disableButtons(false);
-    };
-
-    // المرحلة 4: تسميع نهائي
-    async function runStage4(){
-      if(qa.length===0){ 
-        showFeedback('⚠️ لا توجد أسئلة للتسميع','warning'); 
-        return false; 
-      }
-      if(!SpeechRecognition){ 
-        showFeedback('❌ التعرف على الصوت غير مدعوم','bad'); 
-        return false; 
-      }
-      
-      currentStage = 4;
-      updateStageIndicator(4, true);
-      status.textContent = '📝 المرحلة 4 - تسميع نهائي';
-      let correct = 0;
-      
-      showFeedback('📝 المرحلة 4: التسميع النهائي - أجب على جميع الأسئلة','ok');
-      await delay(2000);
-      
-      for(let i=0; i<qa.length && !shouldStop; i++){
-        const {q,a} = qa[i];
-        updateProgress(75 + ((i+1)/qa.length) * 25);
-        
-        status.textContent = `📝 سؤال ${i+1} من ${qa.length}`;
-        await speak('سؤال ' + (i+1));
-        await delay(delayTime * 0.4);
-        await speak(q);
-        await delay(delayTime * 0.5);
-        
-        try{
-          const userTxt = await recognizeOnce('ar-SA');
-          const userNorm = normalizeText(userTxt);
-          const answerNorm = normalizeText(a);
-          const isCorrect = (userNorm === answerNorm);
-          
-          if(isCorrect){ 
-            correct++; 
-            showFeedback(`✅ (${i+1}) صحيح`,'success'); 
-            await speak('صحيح'); 
-          } else { 
-            showFeedback(`❌ (${i+1}) خاطئ | الصواب: "${a}"`,'bad'); 
-            await speak('خاطئ');
-            await delay(delayTime * 0.3);
-            await speak(a); 
-          }
-          await delay(delayTime * 0.8);
-        }catch(e){ 
-          showFeedback(`⚠️ (${i+1}) خطأ في التعرف`,'warning'); 
-          await delay(delayTime * 1.5);
-        }
-      }
-      
-      if(shouldStop) return false;
-      
-      showStats(correct, qa.length);
-      completedStages.add(4);
-      updateStageIndicator(4);
-      
-      const percentage = Math.round(correct/qa.length*100);
-      status.textContent = `🎉 اكتمل التسميع! النتيجة: ${correct}/${qa.length} (${percentage}%)`;
-      
-      if(percentage === 100){
-        showFeedback(`🎉 ممتاز! حصلت على العلامة الكاملة ${correct}/${qa.length}!`,'success');
-        await speak('ممتاز جداً! لقد أتممت جميع الأسئلة بشكل صحيح');
-      } else if(percentage >= 80){
-        showFeedback(`👏 جيد جداً! النتيجة: ${correct}/${qa.length} (${percentage}%)`,'success');
-        await speak('جيد جداً! استمر في المحاولة');
-      } else {
-        showFeedback(`💪 النتيجة: ${correct}/${qa.length} (${percentage}%) - حاول مرة أخرى`,'warning');
-        await speak('حاول مراجعة المادة مرة أخرى');
-      }
-      
-      return true;
-    }
-
-    document.getElementById('stage4').onclick = async ()=>{
-      if(isProcessing) return;
-      shouldStop = false;
-      isProcessing = true;
-      disableButtons(true);
-      
-      await runStage4();
-      
-      isProcessing = false;
-      disableButtons(false);
-    };
-
-    // ========== تشغيل جميع المراحل ==========
-    document.getElementById('startAll').onclick = async ()=>{
-      if(isProcessing) return;
-      if(qa.length === 0){
-        showFeedback('⚠️ يجب إضافة أسئلة أولاً','warning');
-        return;
-      }
-      
-      if(!confirm('🚀 هل تريد البدء بجميع المراحل الأربعة بشكل متتالي؟\n\nالمدة المتوقعة: ' + (qa.length * 2) + '-' + (qa.length * 3) + ' دقيقة')){
-        return;
-      }
-      
-      shouldStop = false;
-      isProcessing = true;
-      disableButtons(true);
-      hideStats();
-      completedStages.clear();
-      updateStageIndicator(0);
-      updateProgress(0);
-      
-      // المرحلة 1
-      const stage1Success = await runStage1();
-      if(!stage1Success || shouldStop){
-        isProcessing = false;
-        disableButtons(false);
-        return;
-      }
-      
-      if(autoProgress){
-        await delay(3000);
-        showFeedback('⏩ الانتقال للمرحلة 2...','ok');
-        await delay(2000);
-      }
-      
-      // المرحلة 2
-      const stage2Success = await runStage2();
-      if(!stage2Success || shouldStop){
-        isProcessing = false;
-        disableButtons(false);
-        return;
-      }
-      
-      if(autoProgress){
-        await delay(3000);
-        showFeedback('⏩ الانتقال للمرحلة 3...','ok');
-        await delay(2000);
-      }
-      
-      // المرحلة 3
-      const stage3Success = await runStage3();
-      if(!stage3Success || shouldStop){
-        isProcessing = false;
-        disableButtons(false);
-        return;
-      }
-      
-      if(autoProgress){
-        await delay(3000);
-        showFeedback('⏩ الانتقال للمرحلة النهائية 4...','ok');
-        await delay(2000);
-      }
-      
-      // المرحلة 4
-      await runStage4();
-      
-      updateProgress(100);
-      isProcessing = false;
-      disableButtons(false);
-      
-      if(!shouldStop){
-        await delay(2000);
-        showFeedback('🎊 تهانينا! لقد أكملت جميع المراحل الأربعة!','success');
-      }
-    };
-
-    // ========== رسالة ترحيب ==========
-    setTimeout(async ()=>{
-      await speak('مرحباً بك في تطبيق التسميع المتقدم');
-    }, 1500);
-
-    // تحذير عند مغادرة الصفحة
-    window.addEventListener('beforeunload', (e) => {
-      if(qa.length > 0){
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    });
+    setTimeout(()=>{
+      speak('مرحباً بك في تطبيق التسميع الذكي');
+    }, 1000);
   </script>
 </body>
 </html>
